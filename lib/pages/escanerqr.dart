@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import '../sessionUser/sessionUser.dart';
-import '../main.dart'; // Make sure Supabase is initialized here
+import '../main.dart'; // Asegúrate de que Supabase esté inicializado aquí
 
 class EscanerQr extends StatefulWidget {
   const EscanerQr({Key? key}) : super(key: key);
@@ -115,35 +115,34 @@ class _EscanerQrState extends State<EscanerQr> {
     );
   }
 
-  void _showConfirmationDialog() async {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('¿Confirmar Asistencia?'),
-          actions: [
-            TextButton(
-              onPressed: () async {
-                // Aquí agregas la lógica para confirmar la asistencia e insertar en la base de datos
-                await _confirmarAsistencia(); // Función para confirmar asistencia
-                Navigator.of(context).pop(); // Cierra el cuadro de diálogo
-              },
-              child: Text('Confirmar'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Cierra el cuadro de diálogo
-              },
-              child: Text('Cancelar'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   Future<void> _confirmarAsistencia() async {
     try {
+      // Verificar nuevamente antes de confirmar para evitar duplicados
+      bool asistenciaRegistrada = await _verificarAsistenciaRegistrada();
+
+      if (asistenciaRegistrada) {
+        // Mostrar un cuadro de diálogo indicando que ya se registró la asistencia
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: Text('¡Atención!'),
+              content: Text('Usted ya registró su asistencia.'),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Cierra el cuadro de diálogo
+                  },
+                  child: Text('Aceptar'),
+                ),
+              ],
+            );
+          },
+        );
+
+        return;
+      }
+
       // Insertar en la tabla 'asistencia'
       await supabaseClient.from('asistencia').upsert([
         {
@@ -169,6 +168,74 @@ class _EscanerQrState extends State<EscanerQr> {
     }
 
     return widgets;
+  }
+
+  Future<bool> _verificarAsistenciaRegistrada() async {
+    try {
+      final response = await supabaseClient
+          .from('asistencia')
+          .select('id_estudiante, id_asignatura')
+          .eq('id_estudiante', SessionUser.idEstudiante)
+          .eq('id_asignatura', idAsignatura)
+          .execute();
+
+      // Si la consulta devuelve datos, significa que ya se registró la asistencia
+      return response.data != null && response.data!.length > 0;
+    } catch (error) {
+      // Manejar el error (puedes mostrar un mensaje de error, realizar un seguimiento, etc.)
+      print('Error al verificar la asistencia: $error');
+      return false;
+    }
+  }
+
+  void _showConfirmationDialog() async {
+    bool asistenciaRegistrada = await _verificarAsistenciaRegistrada();
+
+    if (asistenciaRegistrada) {
+      // Mostrar un cuadro de diálogo indicando que ya se registró la asistencia
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('¡Atención!'),
+            content: Text('Usted ya registró su asistencia.'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); // Cierra el cuadro de diálogo
+                },
+                child: Text('Aceptar'),
+              ),
+            ],
+          );
+        },
+      );
+    } else {
+      // Mostrar el cuadro de diálogo de confirmación
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('¿Confirmar Asistencia?'),
+            actions: [
+              TextButton(
+                onPressed: () async {
+                  await _confirmarAsistencia();
+                  Navigator.of(context).pop();
+                },
+                child: Text('Confirmar'),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('Cancelar'),
+              ),
+            ],
+          );
+        },
+      );
+    }
   }
 
   @override

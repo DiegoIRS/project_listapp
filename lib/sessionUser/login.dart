@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../pages/menu.dart';
+import 'register.dart';
 import 'sessionUser.dart'; // Ajusta la ruta según tu estructura de archivos
 
 class LoginScreen extends StatefulWidget {
@@ -56,19 +57,33 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    double screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Iniciar Sesión'),
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: <Widget>[
-                  TextFormField(
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : ListView(
+                children: [
+                  SizedBox(height: screenHeight * .12),
+                  const Text(
+                    'Bienvenido,',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  SizedBox(height: screenHeight * .01),
+                  Text(
+                    'Iniciar Sesion Para Continuar!',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.black.withOpacity(.6),
+                    ),
+                  ),
+                  SizedBox(height: screenHeight * .12),
+                  TextField(
                     controller: _correoController,
                     decoration: const InputDecoration(
                       labelText: 'Correo',
@@ -76,8 +91,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     keyboardType: TextInputType.emailAddress,
                   ),
-                  const SizedBox(height: 16),
-                  TextFormField(
+                  SizedBox(height: screenHeight * .025),
+                  TextField(
                     controller: _contrasenaController,
                     decoration: const InputDecoration(
                       labelText: 'Contraseña',
@@ -85,14 +100,36 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     obscureText: true,
                   ),
-                  const SizedBox(height: 24),
+                  SizedBox(height: screenHeight * .075),
                   ElevatedButton(
                     onPressed: _login,
                     child: const Text('Iniciar Sesión'),
+                    style: ElevatedButton.styleFrom(
+                      padding:
+                          EdgeInsets.symmetric(vertical: screenHeight * .02),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
                   ),
+                  Center(
+                    child: TextButton(
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                              builder: (context) => SignUpScreen()),
+                        );
+                      },
+                      child: const Text(
+                        '¿No estás registrado? Pulsa aquí',
+                        style: TextStyle(decoration: TextDecoration.underline),
+                      ),
+                    ),
+                  ),
+                  // Aquí puedes agregar los demás elementos, como botones para navegar a otras pantallas
                 ],
               ),
-            ),
+      ),
     );
   }
 }

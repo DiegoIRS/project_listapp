@@ -1,39 +1,49 @@
 import 'package:flutter/material.dart';
-import 'agenda.dart';
-import 'escanerqr.dart';
-import 'inicio.dart'; // Asegúrate de que este archivo contiene HomeWidget
+//import 'pages/clases.dart';
+//import 'pages/escanerqr.dart';
+//import 'pages/inicio.dart';
 
-class BottomNavigation extends StatefulWidget {
-  final Map<String, dynamic> estudianteData;
-
-  const BottomNavigation({
-    super.key,
-    required this.estudianteData,
-  });
-
-  @override
-  _BottomNavigationState createState() => _BottomNavigationState();
+void main() {
+  runApp(MyApp());
 }
 
-class _BottomNavigationState extends State<BottomNavigation> {
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Bottom Bar App',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        brightness: Brightness.light,
+        primaryColor: Colors.white,
+        bottomNavigationBarTheme: BottomNavigationBarThemeData(
+          selectedItemColor: Colors.cyan,
+        ),
+      ),
+      home: BottomBarScreen(),
+    );
+  }
+}
+
+class BottomBarScreen extends StatefulWidget {
+  @override
+  _BottomBarScreenState createState() => _BottomBarScreenState();
+}
+
+class _BottomBarScreenState extends State<BottomBarScreen> {
   late List<Map<String, Widget>> _pages;
-  int _selectedPageIndex = 0;
 
   @override
   void initState() {
-    super.initState();
     _pages = [
-      {
-        'page': HomeWidget(estudianteData: widget.estudianteData),
-      },
-      {
-        'page': const EscanerQr(),
-      },
-      {
-        'page': const SelectableCalendar(),
-      },
+      //{'page': Inicio()},
+      //{'page': EscanerQr()},
+      //{'page': Clases()},
     ];
+    super.initState();
   }
+
+  int _selectedPageIndex = 0;
 
   void _selectPage(int index) {
     setState(() {
@@ -43,11 +53,6 @@ class _BottomNavigationState extends State<BottomNavigation> {
 
   @override
   Widget build(BuildContext context) {
-    // Utiliza MediaQuery para adaptar el tamaño de los elementos
-    final Size screenSize = MediaQuery.of(context).size;
-    final double iconSize = screenSize.width *
-        0.06; // Tamaño de los íconos basado en el ancho de la pantalla
-
     return Scaffold(
       body: _pages[_selectedPageIndex]['page']!,
       bottomNavigationBar: BottomAppBar(
@@ -57,11 +62,11 @@ class _BottomNavigationState extends State<BottomNavigation> {
           height: kBottomNavigationBarHeight * 0.98,
           child: Container(
             decoration: BoxDecoration(
-              color: const Color.fromRGBO(255, 255, 255, 1),
-              border: const Border(
+              color: Color.fromRGBO(255, 255, 255, 1),
+              border: Border(
                 top: BorderSide(
-                  color: Color.fromARGB(255, 255, 255, 255),
-                  width: 0,
+                  color: const Color.fromARGB(255, 255, 255, 255),
+                  width: 0.5,
                 ),
               ),
             ),
@@ -71,7 +76,7 @@ class _BottomNavigationState extends State<BottomNavigation> {
               currentIndex: _selectedPageIndex,
               items: [
                 BottomNavigationBarItem(
-                  icon: Icon(Icons.home, size: iconSize),
+                  icon: Icon(Icons.home),
                   label: 'Inicio',
                 ),
                 BottomNavigationBarItem(
@@ -79,7 +84,7 @@ class _BottomNavigationState extends State<BottomNavigation> {
                   label: '',
                 ),
                 BottomNavigationBarItem(
-                  icon: Icon(Icons.add_alarm, size: iconSize),
+                  icon: Icon(Icons.add_alarm),
                   label: 'Clases',
                 ),
               ],
@@ -90,14 +95,14 @@ class _BottomNavigationState extends State<BottomNavigation> {
       floatingActionButtonLocation:
           FloatingActionButtonLocation.miniCenterDocked,
       floatingActionButton: Padding(
-        padding: const EdgeInsets.all(5.0),
+        padding: const EdgeInsets.all(10.0),
         child: FloatingActionButton(
-          hoverElevation: 1,
-          splashColor: Colors.cyan,
+          hoverElevation: 1.0,
+          splashColor: Color.fromARGB(255, 255, 255, 255),
           tooltip: 'QR',
-          elevation: 0.1,
+          elevation: 1,
           onPressed: () => _selectPage(1),
-          child: const Icon(Icons.qr_code, size: 28),
+          child: Icon(Icons.qr_code),
         ),
       ),
     );
