@@ -3,7 +3,6 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'sessionUser/login.dart';
 
-
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
   Supabase.initialize(
