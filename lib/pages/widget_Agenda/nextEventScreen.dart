@@ -49,45 +49,58 @@ class NextEventScreen extends StatelessWidget {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                event.title,
-                                style: const TextStyle(
-                                  color: Color(0xFF14181B),
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.w500,
+                          Expanded(
+                            // Hace que el título sea responsivo
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  event.title,
+                                  overflow: TextOverflow
+                                      .ellipsis, // Evita el desbordamiento del texto
+                                  style: const TextStyle(
+                                    color: Color(0xFF14181B),
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.w500,
+                                  ),
                                 ),
-                              ),
-                              Row(
-                                children: [
-                                  Container(
-                                    margin: const EdgeInsets.only(right: 8),
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color: const Color(0x4DEE8B60),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Text(
-                                      '${event.dateTime.hour}:${event.dateTime.minute.toString().padLeft(2, '0')}',
-                                      style: const TextStyle(
-                                        color: Color(0xFFEE8B60),
-                                        fontSize: 14,
+                                Row(
+                                  children: [
+                                    Container(
+                                      margin: const EdgeInsets.only(right: 8),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0x4DEE8B60),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Text(
+                                        '${event.dateTime.hour}:${event.dateTime.minute.toString().padLeft(2, '0')}',
+                                        style: const TextStyle(
+                                          color: Color(0xFFEE8B60),
+                                          fontSize: 14,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  Text(
-                                    '${event.dateTime.day}/${event.dateTime.month}/${event.dateTime.year}',
-                                    style: const TextStyle(
-                                      color: Color(0xFF14181B),
-                                      fontSize: 12,
+                                    Text(
+                                      '${event.dateTime.day}/${event.dateTime.month}/${event.dateTime.year}',
+                                      style: const TextStyle(
+                                        color: Color(0xFF14181B),
+                                        fontSize: 12,
+                                      ),
                                     ),
+                                  ],
+                                ),
+                                // Opcional: Muestra el estado del evento si es necesario
+                                Text(
+                                  event.status, // Muestra el estado del evento
+                                  style: const TextStyle(
+                                    color: Colors.grey,
+                                    fontSize: 12,
                                   ),
-                                ],
-                              ),
-                            ],
+                                ),
+                              ],
+                            ),
                           ),
                           Container(
                             width: 50,

@@ -25,7 +25,7 @@ void main() async {
   runApp(MyApp(loggedIn: idEstudiante != null, estudianteData: {
     'id_estudiante': idEstudiante ?? 0,
     'nombre': prefs.getString('nombre') ?? '',
-    'correo': prefs.getString('correo') ?? '',  
+    'correo': prefs.getString('correo') ?? '',
   }));
 }
 

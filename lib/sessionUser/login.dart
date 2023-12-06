@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import '../pages/menu.dart';
-import 'register.dart';
-import 'sessionUser.dart';
+import '../pages/menu.dart';  // Asegúrate de que esta ruta sea correcta
+import 'register.dart';     // Asegúrate de que esta ruta sea correcta
+import 'sessionUser.dart';  // Asegúrate de que esta ruta sea correcta
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -27,39 +27,33 @@ class _LoginScreenState extends State<LoginScreen> {
         .eq('contrasena', _contrasenaController.text.trim())
         .execute();
 
-    print('Supabase Response: $response');
-
     setState(() => _isLoading = false);
 
     if (response.status >= 400) {
-      // Error en la consulta
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Error al iniciar sesión')),
       );
     } else if (response.data == null || response.data.isEmpty) {
-      // No se encontraron datos
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Credenciales incorrectas')),
       );
     } else {
-      // Éxito en el inicio de sesión
-      print('Successful login! Data: ${response.data[0]}');
+      final estudianteData = response.data[0];
+      SessionUser.idEstudiante = estudianteData['id_estudiante'] as int;
+      SessionUser.idCarrera = estudianteData['id_carrera'] as int; // Asegúrate de que esta columna exista
 
-      // Guardar id_estudiante como int en SessionUser
-      SessionUser.idEstudiante = response.data[0]['id_estudiante'] as int;
-
-      // Guardar información en SharedPreferences
       final prefs = await SharedPreferences.getInstance();
       prefs.setInt('idEstudiante', SessionUser.idEstudiante!);
-      prefs.setString('nombre', response.data[0]['nombre'] as String);
-      prefs.setString('correo', response.data[0]['correo'] as String);
+      prefs.setInt('idCarrera', SessionUser.idCarrera!);
+      prefs.setString('nombre', estudianteData['nombre'] as String);
+      prefs.setString('correo', estudianteData['correo'] as String);
 
-      // Navegar a la página principal
       Navigator.of(context).pushReplacement(MaterialPageRoute(
         builder: (context) => BottomNavigation(estudianteData: {
           'id_estudiante': SessionUser.idEstudiante,
-          'nombre': response.data[0]['nombre'],
-          'correo': response.data[0]['correo'],
+          'id_carrera': SessionUser.idCarrera,
+          'nombre': estudianteData['nombre'],
+          'correo': estudianteData['correo'],
         }),
       ));
     }
@@ -136,7 +130,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                     ),
                   ),
-                  // Aquí puedes agregar los demás elementos, como botones para navegar a otras pantallas
                 ],
               ),
       ),
