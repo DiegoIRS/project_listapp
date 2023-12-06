@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 import '../sessionUser/sessionUser.dart';
-import '../main.dart'; // Asegúrate de que Supabase esté inicializado aquí
+import '../main.dart';
 
 class EscanerQr extends StatefulWidget {
   const EscanerQr({Key? key}) : super(key: key);
@@ -15,6 +15,7 @@ class _EscanerQrState extends State<EscanerQr> {
   final GlobalKey qrKey = GlobalKey(debugLabel: 'QR');
   bool scanningEnabled = true;
   int? idAsignatura;
+  String? fechaAsistencia;
 
   @override
   Widget build(BuildContext context) {
@@ -60,7 +61,9 @@ class _EscanerQrState extends State<EscanerQr> {
       if (scanningEnabled && scanData.code != null) {
         scanningEnabled = false;
         idAsignatura = _parseIdAsignatura(scanData.code!);
-        _showDialog(scanData.code!);
+        fechaAsistencia =
+            _parseFechaAsistencia(scanData.code!); // Almacenar la fecha
+        _showDialog(scanData.code!, fechaAsistencia);
       }
     });
   }
@@ -85,7 +88,22 @@ class _EscanerQrState extends State<EscanerQr> {
     return null;
   }
 
-  void _showDialog(String qrData) {
+  String? _parseFechaAsistencia(String qrData) {
+    List<String> keyValuePairs = qrData.split(', ');
+    for (String pair in keyValuePairs) {
+      List<String> keyValue = pair.split(': ');
+      if (keyValue.length == 2) {
+        String key = keyValue[0].trim();
+        String value = keyValue[1].trim();
+        if (key == 'fecha') {
+          return value;
+        }
+      }
+    }
+    return null;
+  }
+
+  void _showDialog(String qrData, String? fechaAsistencia) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -98,14 +116,17 @@ class _EscanerQrState extends State<EscanerQr> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
-              children: parsedDataWidgets,
+              children: [
+                if (fechaAsistencia != null) Text('Fecha: $fechaAsistencia'),
+                ...parsedDataWidgets,
+              ],
             ),
           ),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                _showConfirmationDialog();
+                _showConfirmationDialog(fechaAsistencia);
               },
               child: Text('Aceptar'),
             ),
@@ -115,7 +136,7 @@ class _EscanerQrState extends State<EscanerQr> {
     );
   }
 
-  Future<void> _confirmarAsistencia() async {
+  Future<void> _confirmarAsistencia(String? fechaAsistencia) async {
     try {
       // Verificar nuevamente antes de confirmar para evitar duplicados
       bool asistenciaRegistrada = await _verificarAsistenciaRegistrada();
@@ -143,11 +164,12 @@ class _EscanerQrState extends State<EscanerQr> {
         return;
       }
 
-      // Insertar en la tabla 'asistencia'
+      // Insertar en la tabla 'asistencia' con la fecha
       await supabaseClient.from('asistencia').upsert([
         {
           'id_estudiante': SessionUser.idEstudiante,
           'id_asignatura': idAsignatura,
+          'fecha_asistencia': fechaAsistencia, // Agregar la fecha
         },
       ]).execute();
 
@@ -172,15 +194,21 @@ class _EscanerQrState extends State<EscanerQr> {
 
   Future<bool> _verificarAsistenciaRegistrada() async {
     try {
-      final response = await supabaseClient
-          .from('asistencia')
-          .select('id_estudiante, id_asignatura')
-          .eq('id_estudiante', SessionUser.idEstudiante)
-          .eq('id_asignatura', idAsignatura)
-          .execute();
+      if (fechaAsistencia != null) {
+        final response = await supabaseClient
+            .from('asistencia')
+            .select('id_estudiante, id_asignatura, fecha_asistencia')
+            .eq('id_estudiante', SessionUser.idEstudiante)
+            .eq('id_asignatura', idAsignatura)
+            .eq('fecha_asistencia', fechaAsistencia!)
+            .execute();
 
-      // Si la consulta devuelve datos, significa que ya se registró la asistencia
-      return response.data != null && response.data!.length > 0;
+        // Si la consulta devuelve datos, significa que ya se registró la asistencia
+        return response.data != null && response.data!.length > 0;
+      } else {
+        // Manejar el caso en que la fecha no esté disponible
+        return false;
+      }
     } catch (error) {
       // Manejar el error (puedes mostrar un mensaje de error, realizar un seguimiento, etc.)
       print('Error al verificar la asistencia: $error');
@@ -188,7 +216,7 @@ class _EscanerQrState extends State<EscanerQr> {
     }
   }
 
-  void _showConfirmationDialog() async {
+  void _showConfirmationDialog(String? fechaAsistencia) async {
     bool asistenciaRegistrada = await _verificarAsistenciaRegistrada();
 
     if (asistenciaRegistrada) {
@@ -220,7 +248,7 @@ class _EscanerQrState extends State<EscanerQr> {
             actions: [
               TextButton(
                 onPressed: () async {
-                  await _confirmarAsistencia();
+                  await _confirmarAsistencia(fechaAsistencia);
                   Navigator.of(context).pop();
                 },
                 child: Text('Confirmar'),

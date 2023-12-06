@@ -30,7 +30,7 @@ class _BottomNavigationState extends State<BottomNavigation> {
         'page': const EscanerQr(),
       },
       {
-        'page': const SelectableCalendar(),
+        'page': MyHomePage(),
       },
     ];
   }
@@ -43,62 +43,40 @@ class _BottomNavigationState extends State<BottomNavigation> {
 
   @override
   Widget build(BuildContext context) {
-    // Utiliza MediaQuery para adaptar el tamaño de los elementos
     final Size screenSize = MediaQuery.of(context).size;
-    final double iconSize = screenSize.width *
-        0.06; // Tamaño de los íconos basado en el ancho de la pantalla
+    final double iconSize = screenSize.width * 0.06;
 
     return Scaffold(
+      resizeToAvoidBottomInset:
+          false, // Evita que el Scaffold se redimensione cuando aparece el teclado
       body: _pages[_selectedPageIndex]['page']!,
-      bottomNavigationBar: BottomAppBar(
-        shape: const CircularNotchedRectangle(),
-        clipBehavior: Clip.antiAlias,
-        child: SizedBox(
-          height: kBottomNavigationBarHeight * 0.98,
-          child: Container(
-            decoration: BoxDecoration(
-              color: const Color.fromRGBO(255, 255, 255, 1),
-              border: const Border(
-                top: BorderSide(
-                  color: Color.fromARGB(255, 255, 255, 255),
-                  width: 0,
-                ),
-              ),
-            ),
-            child: BottomNavigationBar(
-              onTap: _selectPage,
-              backgroundColor: Theme.of(context).primaryColor,
-              currentIndex: _selectedPageIndex,
-              items: [
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.home, size: iconSize),
-                  label: 'Inicio',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(null),
-                  label: '',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.add_alarm, size: iconSize),
-                  label: 'Clases',
-                ),
-              ],
-            ),
+      bottomNavigationBar: BottomNavigationBar(
+        onTap: _selectPage,
+        currentIndex: _selectedPageIndex,
+        selectedItemColor: Colors.cyan,
+        unselectedItemColor: Colors.grey,
+        showUnselectedLabels: false,
+        items: [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home, size: iconSize),
+            label: 'Inicio',
           ),
-        ),
+          BottomNavigationBarItem(
+            icon: Icon(null), // Espacio vacío para el botón flotante
+            label: '',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.calendar_today, size: iconSize),
+            label: 'Clases',
+          ),
+        ],
       ),
-      floatingActionButtonLocation:
-          FloatingActionButtonLocation.miniCenterDocked,
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.all(5.0),
-        child: FloatingActionButton(
-          hoverElevation: 1,
-          splashColor: Colors.cyan,
-          tooltip: 'QR',
-          elevation: 0.1,
-          onPressed: () => _selectPage(1),
-          child: const Icon(Icons.qr_code, size: 28),
-        ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => _selectPage(1),
+        child: const Icon(Icons.qr_code, size: 35),
+        tooltip: 'QR',
+        elevation: 4,
       ),
     );
   }

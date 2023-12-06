@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'sessionUser/login.dart';
+import 'pages/menu.dart';
+import 'sessionUser/sessionUser.dart';
 
-void main() {
+// Declarar la instancia global de SupabaseClient
+final SupabaseClient supabaseClient = Supabase.instance.client;
+
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   Supabase.initialize(
     url: 'https://zzfoxilhmmmgankupofr.supabase.co',
@@ -11,13 +17,27 @@ void main() {
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp6Zm94aWxobW1tZ2Fua3Vwb2ZyIiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTg0Mjk3NzksImV4cCI6MjAxNDAwNTc3OX0.tF2Wm6DW_XiC88UXxE50dBPMWk3wwy6moOPb5qgeFRI',
     debug: true,
   );
-  runApp(const MyApp());
+
+  final prefs = await SharedPreferences.getInstance();
+  final idEstudiante = prefs.getInt('idEstudiante');
+
+  SessionUser.idEstudiante = idEstudiante ?? 0;
+  runApp(MyApp(loggedIn: idEstudiante != null, estudianteData: {
+    'id_estudiante': idEstudiante ?? 0,
+    'nombre': prefs.getString('nombre') ?? '',
+    'correo': prefs.getString('correo') ?? '',  
+  }));
 }
 
-final SupabaseClient supabaseClient = Supabase.instance.client;
-
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final bool loggedIn;
+  final Map<String, dynamic> estudianteData;
+
+  const MyApp({
+    Key? key,
+    required this.loggedIn,
+    required this.estudianteData,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +68,9 @@ class MyApp extends StatelessWidget {
         }
         return const Locale('es', 'CL');
       },
-      home: const LoginScreen(),
+      home: loggedIn
+          ? BottomNavigation(estudianteData: estudianteData)
+          : const LoginScreen(),
     );
   }
 }

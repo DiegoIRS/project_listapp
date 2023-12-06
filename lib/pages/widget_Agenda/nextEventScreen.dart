@@ -16,7 +16,7 @@ class NextEventScreen extends StatelessWidget {
           const Padding(
             padding: EdgeInsets.fromLTRB(16, 12, 0, 0),
             child: Text(
-              'Próximo Evento',
+              'Eventos',
               style: TextStyle(
                 color: Color(0xFF57636C),
                 fontSize: 14,

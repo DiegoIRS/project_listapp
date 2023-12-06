@@ -78,8 +78,21 @@ class _SignUpScreenState extends State<SignUpScreen> {
     } else {
       // Manejo de error en la inserción basado en el estado HTTP
       String errorMessage = 'Error al registrar';
+
       if (response.status != null) {
         errorMessage += ': Error ${response.status}';
+      }
+
+      // Manejo de errores específicos si hay datos en la respuesta
+      if (response.data != null && response.data is Map<String, dynamic>) {
+        final errorData = response.data as Map<String, dynamic>;
+
+        if (errorData.containsKey('error')) {
+          final errorMessages = errorData['error'] as List<dynamic>?;
+          if (errorMessages != null && errorMessages.isNotEmpty) {
+            errorMessage += ': ${errorMessages.join(', ')}';
+          }
+        }
       }
 
       ScaffoldMessenger.of(context).showSnackBar(

@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../pages/menu.dart';
 import 'register.dart';
-import 'sessionUser.dart'; // Ajusta la ruta según tu estructura de archivos
+import 'sessionUser.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -45,12 +46,21 @@ class _LoginScreenState extends State<LoginScreen> {
       print('Successful login! Data: ${response.data[0]}');
 
       // Guardar id_estudiante como int en SessionUser
-      SessionUser.idEstudiante = response.data[0]['id_estudiante'] as int?;
+      SessionUser.idEstudiante = response.data[0]['id_estudiante'] as int;
+
+      // Guardar información en SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      prefs.setInt('idEstudiante', SessionUser.idEstudiante!);
+      prefs.setString('nombre', response.data[0]['nombre'] as String);
+      prefs.setString('correo', response.data[0]['correo'] as String);
 
       // Navegar a la página principal
       Navigator.of(context).pushReplacement(MaterialPageRoute(
-        builder: (context) =>
-            BottomNavigation(estudianteData: response.data[0]),
+        builder: (context) => BottomNavigation(estudianteData: {
+          'id_estudiante': SessionUser.idEstudiante,
+          'nombre': response.data[0]['nombre'],
+          'correo': response.data[0]['correo'],
+        }),
       ));
     }
   }
@@ -76,7 +86,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   SizedBox(height: screenHeight * .01),
                   Text(
-                    'Iniciar Sesion Para Continuar!',
+                    'Iniciar Sesión Para Continuar!',
                     style: TextStyle(
                       fontSize: 18,
                       color: Colors.black.withOpacity(.6),

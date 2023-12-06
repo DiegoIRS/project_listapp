@@ -1,94 +1,107 @@
 import 'package:flutter/material.dart';
-import 'package:table_calendar/table_calendar.dart';
-
-import 'widget_Agenda/dialog.dart';
-import 'widget_Agenda/nextEventScreen.dart';
+// Asegúrate de tener estas clases definidas en sus respectivos archivos y que tengan los constructores correctos.
 import 'widget_Agenda/clase_Event.dart';
+import 'widget_Agenda/dialog.dart';
+import 'widget_Agenda/nextEventScreen.dart'; // Asegúrate de importar este archivo.
 
-class SelectableCalendar extends StatefulWidget {
-  const SelectableCalendar({super.key});
-
+class MyHomePage extends StatefulWidget {
   @override
-  _SelectableCalendarState createState() => _SelectableCalendarState();
+  _MyHomePageState createState() => _MyHomePageState();
 }
 
-class _SelectableCalendarState extends State<SelectableCalendar> {
-  late Map<DateTime, List<Event>> _events;
-  late DateTime _selectedDay;
-  late DateTime _focusedDay;
+class _MyHomePageState extends State<MyHomePage> {
+  int _selectedDay = DateTime.now().weekday;
+  List<String> _weekDays = ['Lun', 'Mar', 'Mie', 'Jue', 'Vie'];
+  Map<int, List<Event>> _eventsByDay = {};
 
   @override
   void initState() {
     super.initState();
-    _selectedDay = DateTime.now();
-    _focusedDay = DateTime.now();
-    _events = {};
+    // Inicializa los eventos para cada día de la semana.
+    _weekDays.asMap().forEach((index, _) {
+      _eventsByDay[index + 1] = [];
+    });
   }
 
-  void _onDaySelected(DateTime selectedDay, DateTime focusedDay) {
-    setState(() {
-      _selectedDay = selectedDay;
-      _focusedDay = focusedDay;
-    });
-    // No se muestra el diálogo aquí como se solicitó.
+  void _addEvent(String title) {
+    if (title.isNotEmpty) {
+      final DateTime now = DateTime.now();
+      final Event newEvent = Event(
+          title: title,
+          dateTime: now); // Usa la fecha actual para el nuevo evento.
+
+      setState(() {
+        _eventsByDay[_selectedDay]!.add(newEvent);
+      });
+
+      // Aquí puedes agregar la lógica para guardar el evento en tu base de datos.
+    }
   }
 
   void _showAddEventDialog() {
     showDialog(
       context: context,
       builder: (context) => AddEventDialog(
-        onAddEvent: (eventTitle) {
-          _addNewEvent(eventTitle);
+        onAddEvent: (String eventTitle) {
+          _addEvent(eventTitle);
         },
       ),
     );
-  }
-
-  void _addNewEvent(String eventTitle) {
-    final eventDate = _selectedDay;
-    final newEvent = Event(title: eventTitle, dateTime: eventDate);
-
-    setState(() {
-      if (_events[eventDate] != null) {
-        _events[eventDate]!.add(newEvent);
-      } else {
-        _events[eventDate] = [newEvent];
-      }
-    });
-    // Aquí debes agregar la lógica para guardar el evento en tu base de datos.
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Calendario'),
+        title: Text('Barra de Navegación Semanal'),
       ),
       body: Column(
-        children: [
-          TableCalendar<Event>(
-            firstDay: DateTime.utc(2010, 10, 16),
-            lastDay: DateTime.utc(2030, 3, 14),
-            focusedDay: _focusedDay,
-            selectedDayPredicate: (day) => isSameDay(_selectedDay, day),
-            onDaySelected: _onDaySelected,
-            eventLoader: (day) => _events[day] ?? [],
-            locale: 'es_ES',
-            availableCalendarFormats: const {
-              CalendarFormat.month: 'Month', // Solo muestra el formato mensual
-            },
-            // Agrega aquí todas las configuraciones adicionales de TableCalendar.
+        children: <Widget>[
+          SizedBox(height: 35),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: _weekDays.asMap().entries.map((entry) {
+              int index = entry.key;
+              String day = entry.value;
+              bool isSelected =
+                  index + 1 == _selectedDay; // Ajuste por índice base 0
+              return GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _selectedDay = index + 1; // Ajuste por índice base 0
+                  });
+                },
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  alignment: Alignment.center,
+                  margin: EdgeInsets.symmetric(horizontal: 2),
+                  decoration: BoxDecoration(
+                    color: isSelected ? Colors.blue : Colors.transparent,
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                  child: Text(
+                    day,
+                    style: TextStyle(
+                      color: isSelected ? Colors.white : Colors.black,
+                      fontWeight:
+                          isSelected ? FontWeight.bold : FontWeight.normal,
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
           ),
           Expanded(
             child: NextEventScreen(
-              events: _events[_selectedDay] ?? [],
+              events: _eventsByDay[_selectedDay] ?? [],
             ),
           ),
         ],
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddEventDialog,
-        child: const Icon(Icons.add),
+        child: Icon(Icons.add),
       ),
     );
   }
